@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:stock_future/home_page.dart';
-import 'package:stock_future/theme_provider.dart';
+import 'package:stock_future/pages/home_page.dart';
+import 'package:stock_future/provider/theme_provider.dart';
 
 void main(List<String> args) {
   runApp(
