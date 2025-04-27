@@ -14,10 +14,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final controller = TextEditingController();
   bool onThemeChanged = false;
-  Future<void> _refreshItems() async {
-    await Future.delayed(Duration(seconds: 2));
-  }
-
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -54,46 +50,42 @@ class _HomePageState extends State<HomePage> {
         tooltip: "AI bot",
         child: Icon(Icons.chat_outlined),
       ),
-      body: RefreshIndicator(
-        onRefresh: _refreshItems,
-        displacement: 1,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20.r, 20.r, 20.r, 30.r),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                SizedBox(height: 40.h),
-                // textfield
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    hintText: "Search Nifty Stocks",
-                    prefixIcon: Icon(Icons.search),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.r, 20.r, 20.r, 30.r),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              SizedBox(height: 20.h),
+              // textfield
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
+                  hintText: "Search Nifty Stocks",
+                  prefixIcon: Icon(Icons.search),
                 ),
-                SizedBox(height: 30.h),
-                // button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50.h),
-                  ),
-                  onPressed: () {},
-                  child: Text("Perdict"),
+              ),
+              SizedBox(height: 30.h),
+              // button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50.h),
                 ),
-                SizedBox(height: 40.h),
-                // chart
-                SizedBox(
-                  height: 400.h,
-                  width: double.infinity,
-                  child: PredictionChart(),
-                ),
-                SizedBox(height: 90.h),
-              ],
-            ),
+                onPressed: () {},
+                child: Text("Perdict"),
+              ),
+              SizedBox(height: 40.h),
+              // chart
+              SizedBox(
+                height: 670.h,
+                width: double.infinity,
+                child: PredictionChart(),
+              ),
+              SizedBox(height: 30.h),
+            ],
           ),
         ),
       ),

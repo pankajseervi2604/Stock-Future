@@ -1,69 +1,147 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-class PredictionChart extends StatelessWidget {
+class PredictionChart extends StatefulWidget {
   const PredictionChart({super.key});
+
+  @override
+  State<PredictionChart> createState() => _PredictionChartState();
+}
+
+class _PredictionChartState extends State<PredictionChart> {
+  @override
+  void initState() {
+    super.initState();
+    fetchPrediction();
+  }
+
+  bool isLoading = true;
+  List<StockData> historicalData = [];
+  List<StockData> predictedData = [];
+
+  Future<void> fetchPrediction() async {
+    try {
+      var url = Uri.parse(
+        'http://192.168.112.28:8000/predict_week',
+      ); // Update with your IP address
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+
+        List<StockData> loadedHistoricalData = [];
+        List<StockData> loadedPredictedData = [];
+
+        for (var item in data) {
+          loadedHistoricalData.add(StockData(item['date'], item['price']));
+        }
+
+        // Simulate predicted data for the next week
+        DateTime lastDate = DateTime.parse(loadedHistoricalData.last.date);
+        for (int i = 1; i <= 7; i++) {
+          DateTime predictedDate = lastDate.add(Duration(days: i));
+          double predictedPrice =
+              loadedHistoricalData.last.price +
+              (i * 0.02); // Simulate a slight increase
+          loadedPredictedData.add(
+            StockData(
+              predictedDate.toIso8601String().split('T')[0],
+              predictedPrice,
+            ),
+          );
+        }
+
+        setState(() {
+          historicalData = loadedHistoricalData;
+          predictedData = loadedPredictedData;
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to fetch prediction');
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SfCartesianChart(
-      primaryXAxis: CategoryAxis(),
-      zoomPanBehavior: ZoomPanBehavior(
-        enablePinching: true,
-        enablePanning: true,
-        zoomMode: ZoomMode.x,
-      ),
-      crosshairBehavior: CrosshairBehavior(
-        enable: true,
-        lineColor: Colors.grey,
-        lineWidth: 0.5,
-        activationMode: ActivationMode.longPress,
-      ),
-      series: [
-        FastLineSeries<SalesData, String>(
-          color: Colors.red,
-          dataSource: <SalesData>[
-            SalesData('Jan', 6),
-            SalesData('Feb', 53),
-            SalesData('Mar', 25),
-            SalesData('Apr', 65),
-            SalesData('May', 44),
-            SalesData('Jun', 86),
-            SalesData('Jul', 69),
-            SalesData('Aug', 3),
-            SalesData('Sep', 40),
-            SalesData('Oct', 75),
-            SalesData('Nov', 32),
-            SalesData('Dec', 90),
+    return isLoading
+        ? Center(
+          child: CircularProgressIndicator(
+            padding: EdgeInsets.symmetric(horizontal: 160, vertical: 188),
+            color: Colors.deepPurple,
+          ),
+        )
+        : Column(
+          children: [
+            // Historical Data Chart
+            SfCartesianChart(
+              primaryXAxis: CategoryAxis(),
+
+              zoomPanBehavior: ZoomPanBehavior(
+                enablePinching: true,
+                enablePanning: true,
+                zoomMode: ZoomMode.x,
+              ),
+              crosshairBehavior: CrosshairBehavior(
+                enable: true,
+                lineColor: Colors.grey,
+                lineWidth: 0.5,
+                activationMode: ActivationMode.longPress,
+              ),
+              title: ChartTitle(text: 'Historical Stock Prices (Last Month)'),
+              series: <CartesianSeries>[
+                LineSeries<StockData, String>(
+                  dataSource: historicalData,
+                  xValueMapper: (StockData stock, _) => stock.date,
+                  yValueMapper: (StockData stock, _) => stock.price,
+                  name: 'Historical Data',
+                  color: Colors.deepPurple,
+                ),
+              ],
+            ),
+
+            SizedBox(height: 20.h),
+            SfCartesianChart(
+              primaryXAxis: CategoryAxis(),
+              zoomPanBehavior: ZoomPanBehavior(
+                enablePinching: true,
+                enablePanning: true,
+                zoomMode: ZoomMode.x,
+              ),
+              crosshairBehavior: CrosshairBehavior(
+                enable: true,
+                lineColor: Colors.grey,
+                lineWidth: 0.5,
+                activationMode: ActivationMode.longPress,
+              ),
+              title: ChartTitle(text: 'Predicted Stock Prices (Next Week)'),
+              series: <CartesianSeries>[
+                LineSeries<StockData, String>(
+                  dataSource: predictedData,
+                  xValueMapper: (StockData stock, _) => stock.date,
+                  yValueMapper: (StockData stock, _) => stock.price,
+                  name: 'Predicted Data',
+                  color: Colors.green,
+                  dashArray: <double>[10, 5], // Dashed line for predictions
+                ),
+              ],
+            ),
           ],
-          xValueMapper: (SalesData sales, context) => sales.year,
-          yValueMapper: (SalesData sales, context) => sales.sales,
-        ),
-        LineSeries<SalesData, String>(
-          color: Colors.deepPurple,
-          dataSource: <SalesData>[
-            SalesData('Jan', 5),
-            SalesData('Feb', 15),
-            SalesData('Mar', 20),
-            SalesData('Apr', 28),
-            SalesData('May', 2),
-            SalesData('Jun', 20),
-            SalesData('Jul', 10),
-            SalesData('Aug', 35),
-            SalesData('Sep', 12),
-            SalesData('Oct', 40),
-            SalesData('Nov', 30),
-            SalesData('Dec', 7),
-          ],
-          xValueMapper: (SalesData sales, context) => sales.year,
-          yValueMapper: (SalesData sales, context) => sales.sales,
-        ),
-      ],
-    );
+        );
   }
 }
 
-class SalesData {
-  SalesData(this.year, this.sales);
-  final String year;
-  final double sales;
+class StockData {
+  final String date;
+  final double price;
+
+  StockData(this.date, this.price);
 }
