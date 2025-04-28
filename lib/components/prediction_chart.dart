@@ -84,7 +84,6 @@ class _PredictionChartState extends State<PredictionChart> {
             // Historical Data Chart
             SfCartesianChart(
               primaryXAxis: CategoryAxis(),
-
               zoomPanBehavior: ZoomPanBehavior(
                 enablePinching: true,
                 enablePanning: true,
