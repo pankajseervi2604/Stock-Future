@@ -16,6 +16,7 @@ class _HomePageState extends State<HomePage> {
   final FocusNode _focusNode = FocusNode();
   bool onThemeChanged = false;
   bool _showList = false;
+  String? selectedStockName;
   List<String> stockFiles = [
     'python_backend/dataset/stockData/ASIANPAINT.csv',
     'python_backend/dataset/stockData/AXISBANK.csv',
@@ -133,12 +134,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        autofocus: true,
-        tooltip: "AI bot",
-        child: Icon(Icons.chat_outlined),
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.fromLTRB(20.r, 20.r, 20.r, 30.r),
@@ -172,8 +167,6 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(15.r),
                       bottomRight: Radius.circular(15.r),
-                      // topLeft: Radius.circular(5.r),
-                      // topRight: Radius.circular(5.r),
                     ),
                     border: Border.all(
                       style: BorderStyle.solid,
@@ -205,16 +198,31 @@ class _HomePageState extends State<HomePage> {
                   elevation: 2,
                   shadowColor: Colors.white,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  final selected = controller.text.trim();
+                  if (selected.isNotEmpty) {
+                    setState(() {
+                      selectedStockName = selected;
+                    });
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Please select a stock")),
+                    );
+                  }
+                },
                 child: Text("Perdict"),
               ),
               SizedBox(height: 40.h),
               // chart
-              SizedBox(
-                height: 670.h,
-                width: double.infinity,
-                child: PredictionChart(),
-              ),
+              if (selectedStockName != null)
+                SizedBox(
+                  height: 670.h,
+                  width: double.infinity,
+                  child: PredictionChart(
+                    key: ValueKey(selectedStockName),
+                    stockName: selectedStockName!,
+                  ),
+                ),
               SizedBox(height: 30.h),
             ],
           ),
